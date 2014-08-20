@@ -1,0 +1,51 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context=".MainScreen"
+    android:background="@drawable/bg_large_green" >
+
+    <!-- Bulldog background -->
+    <ImageView
+        android:id="@+id/fg_bulldog_img"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:src="@drawable/fg_bulldog"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        />
+
+    <Button
+        android:id="@+id/btn_lock_unlock"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_vertical_margin"
+        android:clickable="true"
+        android:onClick="lockUnlockButtonClicked"
+        android:text="@string/btn_alarm_unlocked"
+        android:textStyle="bold"
+        android:theme="@style/AppTheme"
+        android:typeface="normal"/>
+
+    <!--&lt;!&ndash; Lock/Unlock toggle button &ndash;&gt;-->
+    <!--<ImageButton-->
+        <!--android:id="@+id/lock_unlock_btn"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:src="@drawable/btn_green_unlock"-->
+        <!--android:clickable="true"-->
+        <!--android:onClick="lockUnlockButtonClicked"-->
+        <!--android:layout_alignBottom="@+id/lock_unlock_slider"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:layout_alignLeft="@+id/lock_unlock_slider"-->
+        <!--/>-->
+
+</RelativeLayout>

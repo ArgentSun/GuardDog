@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GuardDog</string>
+    <string name="action_preferences">Preferences</string>
+
+    <!-- UI -->
+    <string name="btn_alarm_unlocked">Activate</string>
+    <string name="btn_alarm_locked">Deactivate</string>
+
+    <!-- ........... -->
+    <!-- Preferences -->
+    <!-- ........... -->
+
+    <!--Grace Period-->
+    <string name="pref_grace_period_key">pref_grace_period</string>
+    <string name="pref_grace_period_title">Grace Period</string>
+    <string name="pref_grace_period_summary">The number of seconds between it takes the alarm to be armed</string>
+    <string name="pref_grace_period_default">5</string>
+
+    <!--Motion Tolerance-->
+    <string name="pref_motion_tolerance_key">pref_motion_tolerance</string>
+    <string name="pref_motion_tolerance_title">Motion Tolerance</string>
+    <string name="pref_motion_tolerance_summary">Higher tolerance increases the acceleration threshold before the alarm is triggered.
+    Setting this preference to high or highest may prevent the alarm from triggering if the device is moved slowly.</string>
+    <string name="pref_motion_tolerance_default">1.5</string>
+
+
+    <!--Alarm Tone-->
+    <string name="pref_alarm_tone_key">pref_alarm_tone</string>
+    <string name="pref_alarm_tone_title">Alarm Tone</string>
+    <string name="pref_alarm_tone_summary">The alarm sound when the device is moved.</string>
+    <string name="pref_alarm_tone_default">Alarm_Beep_01.ogg</string>
+
+    <!--Category: Security-->
+    <string name="pref_security_category_title">Security</string>
+
+    <!--Require password-->
+    <string name="pref_use_password_key">pref_use_password</string>
+    <string name="pref_use_password_title">Require password on unlock</string>
+    <string name="pref_use_password_summary">Choose whether to require a PIN code to deactivate the alarm</string>
+    <bool name="pref_use_password_default">false</bool>
+
+    <!--Set password-->
+    <string name="pref_set_password_key">pref_set_password</string>
+    <string name="pref_set_password_title">Set password</string>
+    <string name="pref_set_password_summary">Choose the password required to deactivate the alarm</string>
+
+</resources>

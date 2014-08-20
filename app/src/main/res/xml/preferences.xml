@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:key="@string/pref_grace_period_key"
+        android:title="@string/pref_grace_period_title"
+        android:summary="@string/pref_grace_period_summary"
+        android:inputType="number"
+        android:defaultValue="@string/pref_grace_period_default"
+        />
+
+    <ListPreference
+        android:key="@string/pref_motion_tolerance_key"
+        android:title="@string/pref_motion_tolerance_title"
+        android:summary="@string/pref_motion_tolerance_summary"
+        android:entries="@array/pref_motion_tolerance_entries"
+        android:entryValues="@array/pref_motion_tolerance_values"
+        android:defaultValue="@string/pref_motion_tolerance_default"
+        />
+
+    <ListPreference
+        android:key="@string/pref_alarm_tone_key"
+        android:title="@string/pref_alarm_tone_title"
+        android:summary="@string/pref_alarm_tone_summary"
+        android:entries="@array/pref_alarm_tone_entries"
+        android:entryValues="@array/pref_alarm_tone_values"
+        android:defaultValue="@string/pref_alarm_tone_default"
+        />
+
+    <PreferenceCategory
+        android:key="pref_security"
+        android:title="@string/pref_security_category_title" >
+
+        <CheckBoxPreference
+            android:key="@string/pref_use_password_key"
+            android:title="@string/pref_use_password_title"
+            android:summary="@string/pref_use_password_summary"
+            android:defaultValue="@bool/pref_use_password_default"
+            />
+
+        <EditTextPreference
+            android:key="@string/pref_set_password_key"
+            android:dependency="@string/pref_use_password_key"
+            android:title="@string/pref_set_password_title"
+            android:summary="@string/pref_set_password_summary"
+            />
+    </PreferenceCategory>
+
+</PreferenceScreen>
+
+    <!-- Category: Password -->
+    <!--    Checkbox: Use password? -->
+    <!--    EditText?: Set password -->
+    <!--    EditText?: Update password -->

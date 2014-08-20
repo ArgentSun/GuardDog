@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Motion Tolerance -->
+    <string-array name="pref_motion_tolerance_entries">
+        <item>Lowest</item>
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+        <item>Highest</item>
+    </string-array>
+
+    <string-array name="pref_motion_tolerance_values">
+        <item>1.1</item>
+        <item>1.3</item>
+        <item>1.6</item>
+        <item>2.2</item>
+        <item>3.0</item>
+    </string-array>
+
+    <!-- Alarm Tones -->
+    <string-array name="pref_alarm_tone_entries">
+        <item>Alarm 1</item>
+        <item>Alarm 2</item>
+        <item>Alarm 3</item>
+    </string-array>
+
+    <string-array name="pref_alarm_tone_values">
+        <item>alarm_beep_01</item>
+        <item>alarm_beep_02</item>
+        <item>alarm_beep_03</item>
+    </string-array>
+</resources>

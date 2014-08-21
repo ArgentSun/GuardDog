@@ -10,7 +10,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -55,9 +54,9 @@ public class MainActivity extends Activity
         mSensorAccelerometer    = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         /** Create the media player */
-        int alarmID;
-        String alarmName = mSharedPreferences.getString(PreferencesActivity.KEY_PREF_ALARM_TONE,
-                mResources.getString(R.string.pref_alarm_tone_default));
+//        int alarmID;
+//        String alarmName = mSharedPreferences.getString(PreferencesActivity.KEY_PREF_ALARM_TONE,
+//                mResources.getString(R.string.pref_alarm_tone_default));
         mMediaPlayer = MediaPlayer.create( this, R.raw.alarm_beep_01 );
         // TODO: release() the MediaPlayer in onStop()
     }
@@ -126,6 +125,12 @@ public class MainActivity extends Activity
         /** Update the background color to green */
         View mainLayout = findViewById(R.id.main_layout);
         mainLayout.setBackgroundResource(R.drawable.bg_large_green);
+
+        if ( mMediaPlayer.isPlaying() )
+        {
+            mMediaPlayer.stop();
+            mMediaPlayer.prepareAsync();
+        }
     }
 
     private void triggerAlarm()
@@ -134,15 +139,14 @@ public class MainActivity extends Activity
         {
             if ( !mMediaPlayer.isPlaying() )
             {
-//                mMediaPlayer.setLooping(true);
-//                while (mIsLocked)
-                    mMediaPlayer.start();
+                mMediaPlayer.setLooping(true);
+                mMediaPlayer.start();
             }
         }
         catch (IllegalStateException ise)
         {
             /** The MediaPlayer hasn't been initialized */
-            mMediaPlayer = MediaPlayer.create(this, R.raw.alarm_beep_02 );
+            mMediaPlayer = MediaPlayer.create(this, R.raw.alarm_beep_01 );
         }
     }
 

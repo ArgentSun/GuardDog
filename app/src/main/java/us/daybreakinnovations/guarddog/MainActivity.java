@@ -3,11 +3,13 @@ package us.daybreakinnovations.guarddog;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -16,12 +18,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.IOException;
 
-public class MainActivity extends Activity
-                          implements SensorEventListener
+
+public class MainActivity extends       Activity
+                          implements    SensorEventListener
 {
     /** Shared Preferences/Settings object */
     private SharedPreferences mSharedPreferences;
+    private SharedPreferences.OnSharedPreferenceChangeListener mPreferenceChangeListener;
     private Resources mResources;
 
     /** Sensor variables */
@@ -47,6 +52,25 @@ public class MainActivity extends Activity
 
         /** Get the SharedPreferences object */
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPreferenceChangeListener =
+                new SharedPreferences.OnSharedPreferenceChangeListener()
+                {
+                    @Override
+                    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
+                    {
+                        if ( key.equals(PreferencesActivity.KEY_PREF_ALARM_TONE) )
+                        {
+                            String resourceName = sharedPreferences.getString(key, "");
+                            int resourceID = getRawResourceIdFromName( resourceName );
+
+                            mMediaPlayer.reset();
+                            mMediaPlayer = MediaPlayer.create(getApplicationContext(), resourceID);
+                            mMediaPlayer.setLooping(true);
+                        }
+                    }
+                };
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(mPreferenceChangeListener);
+
         mResources = getResources();
 
         /** Request the system sensor manager and the accelerometer */
@@ -54,13 +78,36 @@ public class MainActivity extends Activity
         mSensorAccelerometer    = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         /** Create the media player */
-//        int alarmID;
-//        String alarmName = mSharedPreferences.getString(PreferencesActivity.KEY_PREF_ALARM_TONE,
-//                mResources.getString(R.string.pref_alarm_tone_default));
-        mMediaPlayer = MediaPlayer.create( this, R.raw.alarm_beep_01 );
-        // TODO: release() the MediaPlayer in onStop()
+        initializeMediaPlayer();
     }
 
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        if ( mMediaPlayer.isPlaying() )
+            mMediaPlayer.stop();
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(mPreferenceChangeListener);
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(mPreferenceChangeListener);
+        super.onPause();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -76,6 +123,7 @@ public class MainActivity extends Activity
         /** Handle action bar item clicks here */
         if (item.getItemId() == R.id.action_preferences)
         {
+            /** [Preferences] selected */
             Intent preferencesActivity = new Intent(this, PreferencesActivity.class);
             startActivity(preferencesActivity);
             return true;
@@ -86,17 +134,16 @@ public class MainActivity extends Activity
     public void lockUnlockButtonClicked( View view )
     {
         if ( !mIsLocked )
-        {
-            /** If device is unlocked / disarmed, start listening for motion */
             deviceLock();
-        }
         else
-        {
-            /** If device is locked / armed, unlock/disarm it and update the button image */
             deviceUnlock();
-        }
     }
 
+    /** Register a a listener for the accelerometer
+     *  Update the time of the last lock (used to determine whether an alarm should be triggered)
+     *  Update the lock/unlock button text
+     *  Update the background
+     *  */
     private void deviceLock()
     {
         mIsLocked = true;
@@ -111,15 +158,23 @@ public class MainActivity extends Activity
         /** Update the background color to red */
         View mainLayout = findViewById(R.id.main_layout);
         mainLayout.setBackgroundResource(R.drawable.bg_large_red);
+
+        initializeMediaPlayer();
     }
 
+    /** Unregister the listener for the accelerometer
+     *  Update the lock/unlock button text
+     *  Update the background color
+     *  Stop the alarm and prepare it for the next time it is triggered
+     *  */
     private void deviceUnlock()
     {
         mIsLocked = false;
         Button lockUnlockButton = (Button) findViewById(R.id.btn_lock_unlock);
         // TODO: Implement the PIN check here
 
-        /** Set the button's text to "Activate" or something like that */
+        mSensorManager.unregisterListener( this, mSensorAccelerometer );
+
         lockUnlockButton.setText(R.string.btn_alarm_unlocked);
 
         /** Update the background color to green */
@@ -129,24 +184,69 @@ public class MainActivity extends Activity
         if ( mMediaPlayer.isPlaying() )
         {
             mMediaPlayer.stop();
-            mMediaPlayer.prepareAsync();
+            try
+            {
+                mMediaPlayer.prepare();
+            }
+            catch (IOException ioe)
+            {
+                /** ... */
+            }
         }
     }
 
+    private void initializeMediaPlayer()
+    {
+        if ( mMediaPlayer == null )
+            mMediaPlayer = new MediaPlayer();
+
+        mMediaPlayer.reset();
+        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+
+        /** Set the display to null - we only care about audio */
+        mMediaPlayer.setDisplay( null );
+
+        /** Set the data source to the current Alarm Tone preference */
+        try
+        {
+            String alarmToneName = mSharedPreferences.getString(PreferencesActivity.KEY_PREF_ALARM_TONE, "");
+            int resourceID = getRawResourceIdFromName(alarmToneName);
+            AssetFileDescriptor assetFileDescriptor = mResources.openRawResourceFd(resourceID);
+
+            mMediaPlayer.setDataSource(assetFileDescriptor.getFileDescriptor(),
+                    assetFileDescriptor.getStartOffset(),
+                    assetFileDescriptor.getLength());
+            assetFileDescriptor.close();
+
+            /** Prepare the media player */
+            mMediaPlayer.prepare();
+            mMediaPlayer.setLooping(true);
+        }
+        catch (IllegalStateException ise )
+        {
+            /** */
+        }
+        catch (IOException ioe)
+        {
+            /** */
+        }
+        catch (IllegalArgumentException iae)
+        {
+            /** */
+        }
+    }
+
+    /** Start continuously playing the alarm sound */
     private void triggerAlarm()
     {
         try
         {
             if ( !mMediaPlayer.isPlaying() )
-            {
-                mMediaPlayer.setLooping(true);
                 mMediaPlayer.start();
-            }
         }
         catch (IllegalStateException ise)
         {
             /** The MediaPlayer hasn't been initialized */
-            mMediaPlayer = MediaPlayer.create(this, R.raw.alarm_beep_01 );
         }
     }
 
@@ -174,16 +274,7 @@ public class MainActivity extends Activity
         if ( event.timestamp - mLastLock < gracePeriod*NANOSECONDS_PER_SECOND )
             return;
 
-        /** Get the delta matrix */
-        float[] values = event.values.clone();
-        float x = values[0];
-        float y = values[1];
-        float z = values[2];
-
-        /** Compute the magnitude of the acceleration vector
-         *  Direction doesn't matter, since we need to detect movement along any axis */
-        float eventAccelerationMagnitude =
-                (x*x + y*y + z*z) / (SensorManager.GRAVITY_EARTH * SensorManager.GRAVITY_EARTH);
+        float eventAccelerationMagnitude = computeAccelerationMagnitude(event);
 
         /** Immobile device on a flat surface has an acceleration vector magnitude of about 1.01
          *  Magnitude of 2 corresponds roughly to a sharp movement */
@@ -198,5 +289,45 @@ public class MainActivity extends Activity
     public void onAccuracyChanged( Sensor sensor, int accuracy )
     {
         /** Do nothing */
+    }
+
+    private float computeAccelerationMagnitude( SensorEvent event )
+    {
+        /** Get the delta matrix */
+        float[] values = event.values.clone();
+        float x = values[0];
+        float y = values[1];
+        float z = values[2];
+
+        /** Compute the magnitude of the acceleration vector
+         *  Direction doesn't matter, since we need to detect movement along any axis */
+        float eventAccelerationMagnitude =
+                (x*x + y*y + z*z) / (SensorManager.GRAVITY_EARTH * SensorManager.GRAVITY_EARTH);
+
+        return eventAccelerationMagnitude;
+    }
+
+    /*******************************************************************/
+    /* OnSharedPreferenceChangeListener abstract method implementation */
+    /*******************************************************************/
+
+    private int getRawResourceIdFromName( String resourceName )
+    {
+        final String ALARM_01   = "alarm_beep_01";
+        final String ALARM_02   = "alarm_beep_02";
+        final String ALARM_03   = "alarm_beep_03";
+
+        int resourceID = 0;
+
+        if ( resourceName.equals(ALARM_01) )
+            resourceID = R.raw.alarm_beep_01;
+        else if ( resourceName.equals(ALARM_02) )
+            resourceID = R.raw.alarm_beep_02;
+        else if ( resourceName.equals(ALARM_03) )
+            resourceID = R.raw.alarm_beep_03;
+        else
+            resourceID = -1;
+
+        return resourceID;
     }
 }
